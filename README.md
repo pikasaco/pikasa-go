@@ -18,6 +18,15 @@ go get github.com/pikasaco/pikasa-go
 The consumer-account API is deliberately absent: it serves pikasa's own
 portal and is not built to support third-party use.
 
+## Base URL
+
+```
+https://api.pikasa.co/grpc
+```
+
+The `/grpc` suffix is required — the services are mounted under it, so a
+client built with the bare host returns 404 on every call.
+
 ## Publishing a listing
 
 ```go
@@ -28,7 +37,9 @@ import (
 	listingsv1 "github.com/pikasaco/pikasa-go/pikasa/listings/v1"
 )
 
-client := integratorsv1connect.NewIntegratorServiceClient(httpClient, "https://api.pikasa.co")
+// Note the /grpc suffix — every service is mounted under it. Without it
+// each call returns 404.
+client := integratorsv1connect.NewIntegratorServiceClient(httpClient, "https://api.pikasa.co/grpc")
 
 req := connect.NewRequest(&integratorsv1.UpsertListingRequest{
 	ExternalId:             "your-crm-id-123",
