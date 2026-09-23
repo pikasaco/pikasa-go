@@ -247,10 +247,23 @@ type UpsertListingRequest struct {
 	Price                  *v1.Price          `protobuf:"bytes,7,opt,name=price,proto3" json:"price,omitempty"`
 	Location               *v1.Location       `protobuf:"bytes,8,opt,name=location,proto3" json:"location,omitempty"`
 	Specs                  *v1.Specs          `protobuf:"bytes,9,opt,name=specs,proto3" json:"specs,omitempty"`
-	Amenities              []string           `protobuf:"bytes,10,rep,name=amenities,proto3" json:"amenities,omitempty"`
-	Photos                 []*v1.Photo        `protobuf:"bytes,11,rep,name=photos,proto3" json:"photos,omitempty"`
-	CountryFields          map[string]string  `protobuf:"bytes,12,rep,name=country_fields,json=countryFields,proto3" json:"country_fields,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	Agent                  *AgentContact      `protobuf:"bytes,13,opt,name=agent,proto3" json:"agent,omitempty"`
+	// The canonical amenity vocabulary. Slugs, not an enum: an enum serialises
+	// as numeric ids, which would make the stored documents unreadable and turn
+	// every new amenity into a breaking wire change.
+	//
+	// Enforced HERE and only here. ADR 0004 makes the Integrator API the sole
+	// way a listing enters the system, so this one field is the whole ingress —
+	// guarding it guards the data. listings.v1.Listing.amenities is a response
+	// field and needs no rule.
+	//
+	// The codes are shared with verme, which syndicates listings into portals:
+	// the same code has to mean the same thing on both sides. The portal's
+	// display list (apps/portal/src/lib/features.ts) must agree with this set —
+	// scripts/check-amenities.sh fails the build when it does not.
+	Amenities     []string          `protobuf:"bytes,10,rep,name=amenities,proto3" json:"amenities,omitempty"`
+	Photos        []*v1.Photo       `protobuf:"bytes,11,rep,name=photos,proto3" json:"photos,omitempty"`
+	CountryFields map[string]string `protobuf:"bytes,12,rep,name=country_fields,json=countryFields,proto3" json:"country_fields,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Agent         *AgentContact     `protobuf:"bytes,13,opt,name=agent,proto3" json:"agent,omitempty"`
 	// active|paused — removal goes through RemoveListing.
 	Status        v1.ListingStatus `protobuf:"varint,14,opt,name=status,proto3,enum=pikasa.listings.v1.ListingStatus" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -626,7 +639,7 @@ const file_pikasa_integrators_v1_integrators_proto_rawDesc = "" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
 	"\x05phone\x18\x02 \x01(\tR\x05phone\x12\x1a\n" +
 	"\bwhatsapp\x18\x03 \x01(\tR\bwhatsapp\x12\x14\n" +
-	"\x05email\x18\x04 \x01(\tR\x05email\"\xe7\x06\n" +
+	"\x05email\x18\x04 \x01(\tR\x05email\"\xe4\f\n" +
 	"\x14UpsertListingRequest\x12(\n" +
 	"\vexternal_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
 	"externalId\x12A\n" +
@@ -637,9 +650,13 @@ const file_pikasa_integrators_v1_integrators_proto_rawDesc = "" +
 	"\x10transaction_type\x18\x06 \x01(\x0e2#.pikasa.listings.v1.TransactionTypeR\x0ftransactionType\x12/\n" +
 	"\x05price\x18\a \x01(\v2\x19.pikasa.listings.v1.PriceR\x05price\x128\n" +
 	"\blocation\x18\b \x01(\v2\x1c.pikasa.listings.v1.LocationR\blocation\x12/\n" +
-	"\x05specs\x18\t \x01(\v2\x19.pikasa.listings.v1.SpecsR\x05specs\x12\x1c\n" +
+	"\x05specs\x18\t \x01(\v2\x19.pikasa.listings.v1.SpecsR\x05specs\x12\x98\x06\n" +
 	"\tamenities\x18\n" +
-	" \x03(\tR\tamenities\x121\n" +
+	" \x03(\tB\xf9\x05\xbaH\xf5\x05\x92\x01\xf1\x05\"\xee\x05r\xeb\x05R\x02acR\x0eaccess_controlR\n" +
+	"accessibleR\x05alarmR\fbackup_powerR\abalconyR\x03bbqR\x04cctvR\tclubhouseR\tconciergeR\x0fcovered_parkingR\tcoworkingR\rdressing_roomR\x06duplexR\belevatorR\x10emergency_stairsR\x10equipped_kitchenR\vfamily_roomR\n" +
+	"fire_alarmR\tfireplaceR\x0efitted_kitchenR\tfurnishedR\x06gardenR\vgreen_areasR\x03gymR\thalf_bathR\x15independent_utilitiesR\bintercomR\ajacuzziR\alaundryR\x04loftR\x12motorcycle_parkingR\vnatural_gasR\rnatural_lightR\fnear_transitR\fopen_parkingR\x06pantryR\aparkingR\x10parking_assignedR\x0eparking_sharedR\x0fparking_visitorR\x05patioR\tpenthouseR\fpet_friendlyR\n" +
+	"playgroundR\x04poolR\x0eprivate_garageR\tremodeledR\x05saunaR\bsecurityR\rsecurity_doorR\fservice_roomR\x0esmart_buildingR\fsolar_panelsR\fsports_courtR\astorageR\x06studioR\aterraceR\vtrash_chuteR\x04viewR\x0ewalk_in_closetR\fwater_heaterR\n" +
+	"water_tankR\tamenities\x121\n" +
 	"\x06photos\x18\v \x03(\v2\x19.pikasa.listings.v1.PhotoR\x06photos\x12e\n" +
 	"\x0ecountry_fields\x18\f \x03(\v2>.pikasa.integrators.v1.UpsertListingRequest.CountryFieldsEntryR\rcountryFields\x129\n" +
 	"\x05agent\x18\r \x01(\v2#.pikasa.integrators.v1.AgentContactR\x05agent\x129\n" +

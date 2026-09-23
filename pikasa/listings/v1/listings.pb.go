@@ -631,6 +631,57 @@ func (x *Photo) GetPosition() int32 {
 	return 0
 }
 
+// AgentCard is the person who published the listing, as the detail page
+// shows them.
+//
+// Deliberately NOT their phone or email. Contact goes through the lead
+// form (ADR 0006) so the enquiry is recorded and delivered to the
+// integrator's CRM; a number printed on the page bypasses that entirely
+// and is harvested off it at scale.
+type AgentCard struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AgentCard) Reset() {
+	*x = AgentCard{}
+	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AgentCard) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AgentCard) ProtoMessage() {}
+
+func (x *AgentCard) ProtoReflect() protoreflect.Message {
+	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AgentCard.ProtoReflect.Descriptor instead.
+func (*AgentCard) Descriptor() ([]byte, []int) {
+	return file_pikasa_listings_v1_listings_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *AgentCard) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
 type OrganizationCard struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	PublicId      string                 `protobuf:"bytes,1,opt,name=public_id,json=publicId,proto3" json:"public_id,omitempty"`
@@ -643,7 +694,7 @@ type OrganizationCard struct {
 
 func (x *OrganizationCard) Reset() {
 	*x = OrganizationCard{}
-	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[6]
+	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -655,7 +706,7 @@ func (x *OrganizationCard) String() string {
 func (*OrganizationCard) ProtoMessage() {}
 
 func (x *OrganizationCard) ProtoReflect() protoreflect.Message {
-	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[6]
+	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -668,7 +719,7 @@ func (x *OrganizationCard) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrganizationCard.ProtoReflect.Descriptor instead.
 func (*OrganizationCard) Descriptor() ([]byte, []int) {
-	return file_pikasa_listings_v1_listings_proto_rawDescGZIP(), []int{6}
+	return file_pikasa_listings_v1_listings_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *OrganizationCard) GetPublicId() string {
@@ -716,13 +767,18 @@ type Listing struct {
 	Organization    *OrganizationCard      `protobuf:"bytes,13,opt,name=organization,proto3" json:"organization,omitempty"`
 	PublishedAt     string                 `protobuf:"bytes,14,opt,name=published_at,json=publishedAt,proto3" json:"published_at,omitempty"` // RFC 3339
 	UpdatedAt       string                 `protobuf:"bytes,15,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`       // RFC 3339
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	// Absent when the integrator published no agent contact — most
+	// listings still show only the organization.
+	Agent *AgentCard `protobuf:"bytes,16,opt,name=agent,proto3" json:"agent,omitempty"`
+	// Metres from a radius search's point; set only in results of one.
+	DistanceM     *float64 `protobuf:"fixed64,17,opt,name=distance_m,json=distanceM,proto3,oneof" json:"distance_m,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Listing) Reset() {
 	*x = Listing{}
-	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[7]
+	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -734,7 +790,7 @@ func (x *Listing) String() string {
 func (*Listing) ProtoMessage() {}
 
 func (x *Listing) ProtoReflect() protoreflect.Message {
-	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[7]
+	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -747,7 +803,7 @@ func (x *Listing) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Listing.ProtoReflect.Descriptor instead.
 func (*Listing) Descriptor() ([]byte, []int) {
-	return file_pikasa_listings_v1_listings_proto_rawDescGZIP(), []int{7}
+	return file_pikasa_listings_v1_listings_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *Listing) GetPublicId() string {
@@ -855,26 +911,50 @@ func (x *Listing) GetUpdatedAt() string {
 	return ""
 }
 
+func (x *Listing) GetAgent() *AgentCard {
+	if x != nil {
+		return x.Agent
+	}
+	return nil
+}
+
+func (x *Listing) GetDistanceM() float64 {
+	if x != nil && x.DistanceM != nil {
+		return *x.DistanceM
+	}
+	return 0
+}
+
 type SearchListingsRequest struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	CountryCode     string                 `protobuf:"bytes,1,opt,name=country_code,json=countryCode,proto3" json:"country_code,omitempty"`
 	Admin2          string                 `protobuf:"bytes,2,opt,name=admin2,proto3" json:"admin2,omitempty"` // optional city filter
 	TransactionType TransactionType        `protobuf:"varint,3,opt,name=transaction_type,json=transactionType,proto3,enum=pikasa.listings.v1.TransactionType" json:"transaction_type,omitempty"`
-	PropertyType    PropertyType           `protobuf:"varint,4,opt,name=property_type,json=propertyType,proto3,enum=pikasa.listings.v1.PropertyType" json:"property_type,omitempty"`
-	MinPrice        int64                  `protobuf:"varint,5,opt,name=min_price,json=minPrice,proto3" json:"min_price,omitempty"`
-	MaxPrice        int64                  `protobuf:"varint,6,opt,name=max_price,json=maxPrice,proto3" json:"max_price,omitempty"`
-	MinBedrooms     int32                  `protobuf:"varint,7,opt,name=min_bedrooms,json=minBedrooms,proto3" json:"min_bedrooms,omitempty"`
-	PageSize        int32                  `protobuf:"varint,8,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	PageToken       string                 `protobuf:"bytes,9,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"` // opaque cursor (last listing id)
+	// Deprecated: use property_types. Still honoured — it is merged into
+	// property_types — so existing callers keep working.
+	//
+	// Deprecated: Marked as deprecated in pikasa/listings/v1/listings.proto.
+	PropertyType PropertyType `protobuf:"varint,4,opt,name=property_type,json=propertyType,proto3,enum=pikasa.listings.v1.PropertyType" json:"property_type,omitempty"`
+	MinPrice     int64        `protobuf:"varint,5,opt,name=min_price,json=minPrice,proto3" json:"min_price,omitempty"`
+	MaxPrice     int64        `protobuf:"varint,6,opt,name=max_price,json=maxPrice,proto3" json:"max_price,omitempty"`
+	MinBedrooms  int32        `protobuf:"varint,7,opt,name=min_bedrooms,json=minBedrooms,proto3" json:"min_bedrooms,omitempty"`
+	PageSize     int32        `protobuf:"varint,8,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageToken    string       `protobuf:"bytes,9,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"` // opaque cursor (last listing id)
 	// Restrict results to a map viewport. Optional.
-	Bbox          *BoundingBox `protobuf:"bytes,10,opt,name=bbox,proto3" json:"bbox,omitempty"`
+	Bbox *BoundingBox `protobuf:"bytes,10,opt,name=bbox,proto3" json:"bbox,omitempty"`
+	// Restrict results to a radius around a point, nearest first, each with its
+	// distance_m. Optional; not combinable with bbox. Page tokens from a radius
+	// search are only valid for the same search.
+	Near *Near `protobuf:"bytes,11,opt,name=near,proto3" json:"near,omitempty"`
+	// Match any of these types, e.g. [HOUSE, APARTMENT]. Empty = any type.
+	PropertyTypes []PropertyType `protobuf:"varint,12,rep,packed,name=property_types,json=propertyTypes,proto3,enum=pikasa.listings.v1.PropertyType" json:"property_types,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *SearchListingsRequest) Reset() {
 	*x = SearchListingsRequest{}
-	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[8]
+	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -886,7 +966,7 @@ func (x *SearchListingsRequest) String() string {
 func (*SearchListingsRequest) ProtoMessage() {}
 
 func (x *SearchListingsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[8]
+	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -899,7 +979,7 @@ func (x *SearchListingsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchListingsRequest.ProtoReflect.Descriptor instead.
 func (*SearchListingsRequest) Descriptor() ([]byte, []int) {
-	return file_pikasa_listings_v1_listings_proto_rawDescGZIP(), []int{8}
+	return file_pikasa_listings_v1_listings_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *SearchListingsRequest) GetCountryCode() string {
@@ -923,6 +1003,7 @@ func (x *SearchListingsRequest) GetTransactionType() TransactionType {
 	return TransactionType_TRANSACTION_TYPE_UNSPECIFIED
 }
 
+// Deprecated: Marked as deprecated in pikasa/listings/v1/listings.proto.
 func (x *SearchListingsRequest) GetPropertyType() PropertyType {
 	if x != nil {
 		return x.PropertyType
@@ -972,6 +1053,20 @@ func (x *SearchListingsRequest) GetBbox() *BoundingBox {
 	return nil
 }
 
+func (x *SearchListingsRequest) GetNear() *Near {
+	if x != nil {
+		return x.Near
+	}
+	return nil
+}
+
+func (x *SearchListingsRequest) GetPropertyTypes() []PropertyType {
+	if x != nil {
+		return x.PropertyTypes
+	}
+	return nil
+}
+
 type SearchListingsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Listings      []*Listing             `protobuf:"bytes,1,rep,name=listings,proto3" json:"listings,omitempty"`
@@ -982,7 +1077,7 @@ type SearchListingsResponse struct {
 
 func (x *SearchListingsResponse) Reset() {
 	*x = SearchListingsResponse{}
-	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[9]
+	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -994,7 +1089,7 @@ func (x *SearchListingsResponse) String() string {
 func (*SearchListingsResponse) ProtoMessage() {}
 
 func (x *SearchListingsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[9]
+	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1007,7 +1102,7 @@ func (x *SearchListingsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchListingsResponse.ProtoReflect.Descriptor instead.
 func (*SearchListingsResponse) Descriptor() ([]byte, []int) {
-	return file_pikasa_listings_v1_listings_proto_rawDescGZIP(), []int{9}
+	return file_pikasa_listings_v1_listings_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *SearchListingsResponse) GetListings() []*Listing {
@@ -1033,7 +1128,7 @@ type GetListingRequest struct {
 
 func (x *GetListingRequest) Reset() {
 	*x = GetListingRequest{}
-	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[10]
+	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1045,7 +1140,7 @@ func (x *GetListingRequest) String() string {
 func (*GetListingRequest) ProtoMessage() {}
 
 func (x *GetListingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[10]
+	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1058,7 +1153,7 @@ func (x *GetListingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetListingRequest.ProtoReflect.Descriptor instead.
 func (*GetListingRequest) Descriptor() ([]byte, []int) {
-	return file_pikasa_listings_v1_listings_proto_rawDescGZIP(), []int{10}
+	return file_pikasa_listings_v1_listings_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *GetListingRequest) GetPublicId() string {
@@ -1077,7 +1172,7 @@ type GetListingResponse struct {
 
 func (x *GetListingResponse) Reset() {
 	*x = GetListingResponse{}
-	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[11]
+	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1089,7 +1184,7 @@ func (x *GetListingResponse) String() string {
 func (*GetListingResponse) ProtoMessage() {}
 
 func (x *GetListingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[11]
+	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1102,7 +1197,7 @@ func (x *GetListingResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetListingResponse.ProtoReflect.Descriptor instead.
 func (*GetListingResponse) Descriptor() ([]byte, []int) {
-	return file_pikasa_listings_v1_listings_proto_rawDescGZIP(), []int{11}
+	return file_pikasa_listings_v1_listings_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *GetListingResponse) GetListing() *Listing {
@@ -1110,6 +1205,69 @@ func (x *GetListingResponse) GetListing() *Listing {
 		return x.Listing
 	}
 	return nil
+}
+
+// A radius around a point (WGS84 degrees, metres), for "near here" search.
+// Results come back nearest first.
+type Near struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Lat   float64                `protobuf:"fixed64,1,opt,name=lat,proto3" json:"lat,omitempty"`
+	Lon   float64                `protobuf:"fixed64,2,opt,name=lon,proto3" json:"lon,omitempty"`
+	// Metres, up to 50 km.
+	RadiusM       float64 `protobuf:"fixed64,3,opt,name=radius_m,json=radiusM,proto3" json:"radius_m,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Near) Reset() {
+	*x = Near{}
+	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Near) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Near) ProtoMessage() {}
+
+func (x *Near) ProtoReflect() protoreflect.Message {
+	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Near.ProtoReflect.Descriptor instead.
+func (*Near) Descriptor() ([]byte, []int) {
+	return file_pikasa_listings_v1_listings_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *Near) GetLat() float64 {
+	if x != nil {
+		return x.Lat
+	}
+	return 0
+}
+
+func (x *Near) GetLon() float64 {
+	if x != nil {
+		return x.Lon
+	}
+	return 0
+}
+
+func (x *Near) GetRadiusM() float64 {
+	if x != nil {
+		return x.RadiusM
+	}
+	return 0
 }
 
 type BoundingBox struct {
@@ -1124,7 +1282,7 @@ type BoundingBox struct {
 
 func (x *BoundingBox) Reset() {
 	*x = BoundingBox{}
-	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[12]
+	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1136,7 +1294,7 @@ func (x *BoundingBox) String() string {
 func (*BoundingBox) ProtoMessage() {}
 
 func (x *BoundingBox) ProtoReflect() protoreflect.Message {
-	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[12]
+	mi := &file_pikasa_listings_v1_listings_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1149,7 +1307,7 @@ func (x *BoundingBox) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BoundingBox.ProtoReflect.Descriptor instead.
 func (*BoundingBox) Descriptor() ([]byte, []int) {
-	return file_pikasa_listings_v1_listings_proto_rawDescGZIP(), []int{12}
+	return file_pikasa_listings_v1_listings_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *BoundingBox) GetMinLon() float64 {
@@ -1213,12 +1371,14 @@ const file_pikasa_listings_v1_listings_proto_rawDesc = "" +
 	"\x05Photo\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x10\n" +
 	"\x03url\x18\x02 \x01(\tR\x03url\x12\x1a\n" +
-	"\bposition\x18\x03 \x01(\x05R\bposition\"\x98\x01\n" +
+	"\bposition\x18\x03 \x01(\x05R\bposition\"\x1f\n" +
+	"\tAgentCard\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\"\x98\x01\n" +
 	"\x10OrganizationCard\x12\x1b\n" +
 	"\tpublic_id\x18\x01 \x01(\tR\bpublicId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x19\n" +
 	"\blogo_url\x18\x03 \x01(\tR\alogoUrl\x128\n" +
-	"\x04type\x18\x04 \x01(\x0e2$.pikasa.listings.v1.OrganizationTypeR\x04type\"\xc2\x06\n" +
+	"\x04type\x18\x04 \x01(\x0e2$.pikasa.listings.v1.OrganizationTypeR\x04type\"\xaa\a\n" +
 	"\aListing\x12\x1b\n" +
 	"\tpublic_id\x18\x01 \x01(\tR\bpublicId\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12 \n" +
@@ -1236,15 +1396,19 @@ const file_pikasa_listings_v1_listings_proto_rawDesc = "" +
 	"\forganization\x18\r \x01(\v2$.pikasa.listings.v1.OrganizationCardR\forganization\x12!\n" +
 	"\fpublished_at\x18\x0e \x01(\tR\vpublishedAt\x12\x1d\n" +
 	"\n" +
-	"updated_at\x18\x0f \x01(\tR\tupdatedAt\x1a@\n" +
+	"updated_at\x18\x0f \x01(\tR\tupdatedAt\x123\n" +
+	"\x05agent\x18\x10 \x01(\v2\x1d.pikasa.listings.v1.AgentCardR\x05agent\x12\"\n" +
+	"\n" +
+	"distance_m\x18\x11 \x01(\x01H\x00R\tdistanceM\x88\x01\x01\x1a@\n" +
 	"\x12CountryFieldsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xcc\x03\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\r\n" +
+	"\v_distance_m\"\xdc\x04\n" +
 	"\x15SearchListingsRequest\x12+\n" +
 	"\fcountry_code\x18\x01 \x01(\tB\b\xbaH\x05r\x03\x98\x01\x02R\vcountryCode\x12\x16\n" +
 	"\x06admin2\x18\x02 \x01(\tR\x06admin2\x12N\n" +
-	"\x10transaction_type\x18\x03 \x01(\x0e2#.pikasa.listings.v1.TransactionTypeR\x0ftransactionType\x12E\n" +
-	"\rproperty_type\x18\x04 \x01(\x0e2 .pikasa.listings.v1.PropertyTypeR\fpropertyType\x12\x1b\n" +
+	"\x10transaction_type\x18\x03 \x01(\x0e2#.pikasa.listings.v1.TransactionTypeR\x0ftransactionType\x12I\n" +
+	"\rproperty_type\x18\x04 \x01(\x0e2 .pikasa.listings.v1.PropertyTypeB\x02\x18\x01R\fpropertyType\x12\x1b\n" +
 	"\tmin_price\x18\x05 \x01(\x03R\bminPrice\x12\x1b\n" +
 	"\tmax_price\x18\x06 \x01(\x03R\bmaxPrice\x12!\n" +
 	"\fmin_bedrooms\x18\a \x01(\x05R\vminBedrooms\x12&\n" +
@@ -1252,14 +1416,20 @@ const file_pikasa_listings_v1_listings_proto_rawDesc = "" +
 	"\n" +
 	"page_token\x18\t \x01(\tR\tpageToken\x123\n" +
 	"\x04bbox\x18\n" +
-	" \x01(\v2\x1f.pikasa.listings.v1.BoundingBoxR\x04bbox\"y\n" +
+	" \x01(\v2\x1f.pikasa.listings.v1.BoundingBoxR\x04bbox\x12,\n" +
+	"\x04near\x18\v \x01(\v2\x18.pikasa.listings.v1.NearR\x04near\x12\\\n" +
+	"\x0eproperty_types\x18\f \x03(\x0e2 .pikasa.listings.v1.PropertyTypeB\x13\xbaH\x10\x92\x01\r\x10\a\x18\x01\"\a\x82\x01\x04\x10\x01 \x00R\rpropertyTypes\"y\n" +
 	"\x16SearchListingsResponse\x127\n" +
 	"\blistings\x18\x01 \x03(\v2\x1b.pikasa.listings.v1.ListingR\blistings\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"9\n" +
 	"\x11GetListingRequest\x12$\n" +
 	"\tpublic_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\bpublicId\"K\n" +
 	"\x12GetListingResponse\x125\n" +
-	"\alisting\x18\x01 \x01(\v2\x1b.pikasa.listings.v1.ListingR\alisting\"\xd5\x01\n" +
+	"\alisting\x18\x01 \x01(\v2\x1b.pikasa.listings.v1.ListingR\alisting\"\x90\x01\n" +
+	"\x04Near\x12)\n" +
+	"\x03lat\x18\x01 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\x00\x00\x00\x00\x00\x80V@)\x00\x00\x00\x00\x00\x80V\xc0R\x03lat\x12)\n" +
+	"\x03lon\x18\x02 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\x00\x00\x00\x00\x00\x80f@)\x00\x00\x00\x00\x00\x80f\xc0R\x03lon\x122\n" +
+	"\bradius_m\x18\x03 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\x00\x00\x00\x00\x00j\xe8@!\x00\x00\x00\x00\x00\x00\x00\x00R\aradiusM\"\xd5\x01\n" +
 	"\vBoundingBox\x120\n" +
 	"\amin_lon\x18\x01 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\x00\x00\x00\x00\x00\x80f@)\x00\x00\x00\x00\x00\x80f\xc0R\x06minLon\x120\n" +
 	"\amin_lat\x18\x02 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\x00\x00\x00\x00\x00\x80V@)\x00\x00\x00\x00\x00\x80V\xc0R\x06minLat\x120\n" +
@@ -1309,7 +1479,7 @@ func file_pikasa_listings_v1_listings_proto_rawDescGZIP() []byte {
 }
 
 var file_pikasa_listings_v1_listings_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_pikasa_listings_v1_listings_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_pikasa_listings_v1_listings_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_pikasa_listings_v1_listings_proto_goTypes = []any{
 	(PropertyType)(0),              // 0: pikasa.listings.v1.PropertyType
 	(TransactionType)(0),           // 1: pikasa.listings.v1.TransactionType
@@ -1321,14 +1491,16 @@ var file_pikasa_listings_v1_listings_proto_goTypes = []any{
 	(*Location)(nil),               // 7: pikasa.listings.v1.Location
 	(*Specs)(nil),                  // 8: pikasa.listings.v1.Specs
 	(*Photo)(nil),                  // 9: pikasa.listings.v1.Photo
-	(*OrganizationCard)(nil),       // 10: pikasa.listings.v1.OrganizationCard
-	(*Listing)(nil),                // 11: pikasa.listings.v1.Listing
-	(*SearchListingsRequest)(nil),  // 12: pikasa.listings.v1.SearchListingsRequest
-	(*SearchListingsResponse)(nil), // 13: pikasa.listings.v1.SearchListingsResponse
-	(*GetListingRequest)(nil),      // 14: pikasa.listings.v1.GetListingRequest
-	(*GetListingResponse)(nil),     // 15: pikasa.listings.v1.GetListingResponse
-	(*BoundingBox)(nil),            // 16: pikasa.listings.v1.BoundingBox
-	nil,                            // 17: pikasa.listings.v1.Listing.CountryFieldsEntry
+	(*AgentCard)(nil),              // 10: pikasa.listings.v1.AgentCard
+	(*OrganizationCard)(nil),       // 11: pikasa.listings.v1.OrganizationCard
+	(*Listing)(nil),                // 12: pikasa.listings.v1.Listing
+	(*SearchListingsRequest)(nil),  // 13: pikasa.listings.v1.SearchListingsRequest
+	(*SearchListingsResponse)(nil), // 14: pikasa.listings.v1.SearchListingsResponse
+	(*GetListingRequest)(nil),      // 15: pikasa.listings.v1.GetListingRequest
+	(*GetListingResponse)(nil),     // 16: pikasa.listings.v1.GetListingResponse
+	(*Near)(nil),                   // 17: pikasa.listings.v1.Near
+	(*BoundingBox)(nil),            // 18: pikasa.listings.v1.BoundingBox
+	nil,                            // 19: pikasa.listings.v1.Listing.CountryFieldsEntry
 }
 var file_pikasa_listings_v1_listings_proto_depIdxs = []int32{
 	4,  // 0: pikasa.listings.v1.RentPrice.money:type_name -> pikasa.listings.v1.Money
@@ -1342,22 +1514,25 @@ var file_pikasa_listings_v1_listings_proto_depIdxs = []int32{
 	7,  // 8: pikasa.listings.v1.Listing.location:type_name -> pikasa.listings.v1.Location
 	8,  // 9: pikasa.listings.v1.Listing.specs:type_name -> pikasa.listings.v1.Specs
 	9,  // 10: pikasa.listings.v1.Listing.photos:type_name -> pikasa.listings.v1.Photo
-	17, // 11: pikasa.listings.v1.Listing.country_fields:type_name -> pikasa.listings.v1.Listing.CountryFieldsEntry
-	10, // 12: pikasa.listings.v1.Listing.organization:type_name -> pikasa.listings.v1.OrganizationCard
-	1,  // 13: pikasa.listings.v1.SearchListingsRequest.transaction_type:type_name -> pikasa.listings.v1.TransactionType
-	0,  // 14: pikasa.listings.v1.SearchListingsRequest.property_type:type_name -> pikasa.listings.v1.PropertyType
-	16, // 15: pikasa.listings.v1.SearchListingsRequest.bbox:type_name -> pikasa.listings.v1.BoundingBox
-	11, // 16: pikasa.listings.v1.SearchListingsResponse.listings:type_name -> pikasa.listings.v1.Listing
-	11, // 17: pikasa.listings.v1.GetListingResponse.listing:type_name -> pikasa.listings.v1.Listing
-	12, // 18: pikasa.listings.v1.ListingsService.SearchListings:input_type -> pikasa.listings.v1.SearchListingsRequest
-	14, // 19: pikasa.listings.v1.ListingsService.GetListing:input_type -> pikasa.listings.v1.GetListingRequest
-	13, // 20: pikasa.listings.v1.ListingsService.SearchListings:output_type -> pikasa.listings.v1.SearchListingsResponse
-	15, // 21: pikasa.listings.v1.ListingsService.GetListing:output_type -> pikasa.listings.v1.GetListingResponse
-	20, // [20:22] is the sub-list for method output_type
-	18, // [18:20] is the sub-list for method input_type
-	18, // [18:18] is the sub-list for extension type_name
-	18, // [18:18] is the sub-list for extension extendee
-	0,  // [0:18] is the sub-list for field type_name
+	19, // 11: pikasa.listings.v1.Listing.country_fields:type_name -> pikasa.listings.v1.Listing.CountryFieldsEntry
+	11, // 12: pikasa.listings.v1.Listing.organization:type_name -> pikasa.listings.v1.OrganizationCard
+	10, // 13: pikasa.listings.v1.Listing.agent:type_name -> pikasa.listings.v1.AgentCard
+	1,  // 14: pikasa.listings.v1.SearchListingsRequest.transaction_type:type_name -> pikasa.listings.v1.TransactionType
+	0,  // 15: pikasa.listings.v1.SearchListingsRequest.property_type:type_name -> pikasa.listings.v1.PropertyType
+	18, // 16: pikasa.listings.v1.SearchListingsRequest.bbox:type_name -> pikasa.listings.v1.BoundingBox
+	17, // 17: pikasa.listings.v1.SearchListingsRequest.near:type_name -> pikasa.listings.v1.Near
+	0,  // 18: pikasa.listings.v1.SearchListingsRequest.property_types:type_name -> pikasa.listings.v1.PropertyType
+	12, // 19: pikasa.listings.v1.SearchListingsResponse.listings:type_name -> pikasa.listings.v1.Listing
+	12, // 20: pikasa.listings.v1.GetListingResponse.listing:type_name -> pikasa.listings.v1.Listing
+	13, // 21: pikasa.listings.v1.ListingsService.SearchListings:input_type -> pikasa.listings.v1.SearchListingsRequest
+	15, // 22: pikasa.listings.v1.ListingsService.GetListing:input_type -> pikasa.listings.v1.GetListingRequest
+	14, // 23: pikasa.listings.v1.ListingsService.SearchListings:output_type -> pikasa.listings.v1.SearchListingsResponse
+	16, // 24: pikasa.listings.v1.ListingsService.GetListing:output_type -> pikasa.listings.v1.GetListingResponse
+	23, // [23:25] is the sub-list for method output_type
+	21, // [21:23] is the sub-list for method input_type
+	21, // [21:21] is the sub-list for extension type_name
+	21, // [21:21] is the sub-list for extension extendee
+	0,  // [0:21] is the sub-list for field type_name
 }
 
 func init() { file_pikasa_listings_v1_listings_proto_init() }
@@ -1365,13 +1540,14 @@ func file_pikasa_listings_v1_listings_proto_init() {
 	if File_pikasa_listings_v1_listings_proto != nil {
 		return
 	}
+	file_pikasa_listings_v1_listings_proto_msgTypes[8].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pikasa_listings_v1_listings_proto_rawDesc), len(file_pikasa_listings_v1_listings_proto_rawDesc)),
 			NumEnums:      4,
-			NumMessages:   14,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
