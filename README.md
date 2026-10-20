@@ -15,6 +15,7 @@ go get github.com/pikasaco/pikasa-go
 | `pikasa/insights/v1` | Public market statistics. |
 | `pikasa/leads/v1` | Public lead capture. |
 | `pikasa/discovery/v1` | Property discovery across the wider market — API-key authenticated. |
+| `pikasa/errors/v1` | The error catalogue: one `ErrorReason` on every error the two API-key services return. |
 
 The consumer-account API is deliberately absent: it serves pikasa's own
 portal and is not built to support third-party use.
@@ -112,6 +113,48 @@ metres, up to 50 km. Results then come back nearest first, each with
 ```go
 Near: &listingsv1.Near{Lat: 6.2087, Lon: -75.5680, RadiusM: 1500},
 ```
+
+## Handling errors
+
+Every error from `IntegratorService` and `DiscoveryService` carries exactly
+one `errorsv1.ErrorDetail`. Branch on its `Reason`, not on the message:
+messages are for people and may be reworded, reasons only ever get added.
+What each reason means and what to do about it is documented on the enum in
+`pikasa/errors/v1`.
+
+```go
+import errorsv1 "github.com/pikasaco/pikasa-go/pikasa/errors/v1"
+
+func reason(err error) errorsv1.ErrorReason {
+	var cerr *connect.Error
+	if errors.As(err, &cerr) {
+		for _, d := range cerr.Details() {
+			if v, err := d.Value(); err == nil {
+				if detail, ok := v.(*errorsv1.ErrorDetail); ok {
+					return detail.Reason
+				}
+			}
+		}
+	}
+	return errorsv1.ErrorReason_ERROR_REASON_UNSPECIFIED
+}
+
+switch reason(err) {
+case errorsv1.ErrorReason_ERROR_REASON_ORGANIZATION_NOT_FOUND:
+	// upsert the organization, then retry the listing
+case errorsv1.ErrorReason_ERROR_REASON_INTERNAL:
+	// retry with backoff — upserts and removals are idempotent
+}
+```
+
+`REQUEST_INVALID` errors from a field rule also carry a
+`buf.validate.Violations` detail naming each field and the rule it broke.
+The API key is checked before the request body, so fix the key first. An
+error with **no** `ErrorDetail` never reached pikasa's code. With
+`unavailable` or `deadline_exceeded` it is the network or a proxy giving up,
+and with `internal`/`unknown` it is a server crash: retry those as
+`INTERNAL`. Any other code means the transport refused the request — a body
+that does not decode, or the wrong URL or content type — so fix the client.
 
 ## Versioning
 

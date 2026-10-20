@@ -33,6 +33,9 @@ const (
 	PropertyType_PROPERTY_TYPE_FARM        PropertyType = 5
 	PropertyType_PROPERTY_TYPE_STUDIO      PropertyType = 6
 	PropertyType_PROPERTY_TYPE_COMMERCIAL  PropertyType = 7
+	// A room let within a shared dwelling ("habitación"). Not STUDIO, which
+	// is a self-contained unit with its own kitchen and bathroom.
+	PropertyType_PROPERTY_TYPE_ROOM PropertyType = 8
 )
 
 // Enum value maps for PropertyType.
@@ -46,6 +49,7 @@ var (
 		5: "PROPERTY_TYPE_FARM",
 		6: "PROPERTY_TYPE_STUDIO",
 		7: "PROPERTY_TYPE_COMMERCIAL",
+		8: "PROPERTY_TYPE_ROOM",
 	}
 	PropertyType_value = map[string]int32{
 		"PROPERTY_TYPE_UNSPECIFIED": 0,
@@ -56,6 +60,7 @@ var (
 		"PROPERTY_TYPE_FARM":        5,
 		"PROPERTY_TYPE_STUDIO":      6,
 		"PROPERTY_TYPE_COMMERCIAL":  7,
+		"PROPERTY_TYPE_ROOM":        8,
 	}
 )
 
@@ -1418,7 +1423,7 @@ const file_pikasa_listings_v1_listings_proto_rawDesc = "" +
 	"\x04bbox\x18\n" +
 	" \x01(\v2\x1f.pikasa.listings.v1.BoundingBoxR\x04bbox\x12,\n" +
 	"\x04near\x18\v \x01(\v2\x18.pikasa.listings.v1.NearR\x04near\x12\\\n" +
-	"\x0eproperty_types\x18\f \x03(\x0e2 .pikasa.listings.v1.PropertyTypeB\x13\xbaH\x10\x92\x01\r\x10\a\x18\x01\"\a\x82\x01\x04\x10\x01 \x00R\rpropertyTypes\"y\n" +
+	"\x0eproperty_types\x18\f \x03(\x0e2 .pikasa.listings.v1.PropertyTypeB\x13\xbaH\x10\x92\x01\r\x10\b\x18\x01\"\a\x82\x01\x04\x10\x01 \x00R\rpropertyTypes\"y\n" +
 	"\x16SearchListingsResponse\x127\n" +
 	"\blistings\x18\x01 \x03(\v2\x1b.pikasa.listings.v1.ListingR\blistings\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"9\n" +
@@ -1434,7 +1439,7 @@ const file_pikasa_listings_v1_listings_proto_rawDesc = "" +
 	"\amin_lon\x18\x01 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\x00\x00\x00\x00\x00\x80f@)\x00\x00\x00\x00\x00\x80f\xc0R\x06minLon\x120\n" +
 	"\amin_lat\x18\x02 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\x00\x00\x00\x00\x00\x80V@)\x00\x00\x00\x00\x00\x80V\xc0R\x06minLat\x120\n" +
 	"\amax_lon\x18\x03 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\x00\x00\x00\x00\x00\x80f@)\x00\x00\x00\x00\x00\x80f\xc0R\x06maxLon\x120\n" +
-	"\amax_lat\x18\x04 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\x00\x00\x00\x00\x00\x80V@)\x00\x00\x00\x00\x00\x80V\xc0R\x06maxLat*\xe5\x01\n" +
+	"\amax_lat\x18\x04 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\x00\x00\x00\x00\x00\x80V@)\x00\x00\x00\x00\x00\x80V\xc0R\x06maxLat*\xfd\x01\n" +
 	"\fPropertyType\x12\x1d\n" +
 	"\x19PROPERTY_TYPE_UNSPECIFIED\x10\x00\x12\x1b\n" +
 	"\x17PROPERTY_TYPE_APARTMENT\x10\x01\x12\x17\n" +
@@ -1443,7 +1448,8 @@ const file_pikasa_listings_v1_listings_proto_rawDesc = "" +
 	"\x12PROPERTY_TYPE_LAND\x10\x04\x12\x16\n" +
 	"\x12PROPERTY_TYPE_FARM\x10\x05\x12\x18\n" +
 	"\x14PROPERTY_TYPE_STUDIO\x10\x06\x12\x1c\n" +
-	"\x18PROPERTY_TYPE_COMMERCIAL\x10\a*\x8c\x01\n" +
+	"\x18PROPERTY_TYPE_COMMERCIAL\x10\a\x12\x16\n" +
+	"\x12PROPERTY_TYPE_ROOM\x10\b*\x8c\x01\n" +
 	"\x0fTransactionType\x12 \n" +
 	"\x1cTRANSACTION_TYPE_UNSPECIFIED\x10\x00\x12\x19\n" +
 	"\x15TRANSACTION_TYPE_SALE\x10\x01\x12\x19\n" +

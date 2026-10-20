@@ -467,7 +467,7 @@ const file_pikasa_discovery_v1_discovery_proto_rawDesc = "" +
 	"\x06admin2\x18\x02 \x01(\tR\x06admin2\x12\"\n" +
 	"\fneighborhood\x18\x03 \x01(\tR\fneighborhood\x12N\n" +
 	"\x10transaction_type\x18\x04 \x01(\x0e2#.pikasa.listings.v1.TransactionTypeR\x0ftransactionType\x12\\\n" +
-	"\x0eproperty_types\x18\x05 \x03(\x0e2 .pikasa.listings.v1.PropertyTypeB\x13\xbaH\x10\x92\x01\r\x10\a\x18\x01\"\a\x82\x01\x04\x10\x01 \x00R\rpropertyTypes\x12$\n" +
+	"\x0eproperty_types\x18\x05 \x03(\x0e2 .pikasa.listings.v1.PropertyTypeB\x13\xbaH\x10\x92\x01\r\x10\b\x18\x01\"\a\x82\x01\x04\x10\x01 \x00R\rpropertyTypes\x12$\n" +
 	"\tmin_price\x18\x06 \x01(\x03B\a\xbaH\x04\"\x02(\x00R\bminPrice\x12$\n" +
 	"\tmax_price\x18\a \x01(\x03B\a\xbaH\x04\"\x02(\x00R\bmaxPrice\x12*\n" +
 	"\fmin_bedrooms\x18\b \x01(\x05B\a\xbaH\x04\x1a\x02(\x00R\vminBedrooms\x123\n" +

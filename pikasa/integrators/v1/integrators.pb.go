@@ -245,8 +245,11 @@ type UpsertListingRequest struct {
 	PropertyType           v1.PropertyType    `protobuf:"varint,5,opt,name=property_type,json=propertyType,proto3,enum=pikasa.listings.v1.PropertyType" json:"property_type,omitempty"`
 	TransactionType        v1.TransactionType `protobuf:"varint,6,opt,name=transaction_type,json=transactionType,proto3,enum=pikasa.listings.v1.TransactionType" json:"transaction_type,omitempty"`
 	Price                  *v1.Price          `protobuf:"bytes,7,opt,name=price,proto3" json:"price,omitempty"`
-	Location               *v1.Location       `protobuf:"bytes,8,opt,name=location,proto3" json:"location,omitempty"`
-	Specs                  *v1.Specs          `protobuf:"bytes,9,opt,name=specs,proto3" json:"specs,omitempty"`
+	// country_code is required — every search filters on it, so a listing
+	// without one could never be found. Coordinates are not: a missing or
+	// impossible lat/lon keeps the listing and leaves it off the map.
+	Location *v1.Location `protobuf:"bytes,8,opt,name=location,proto3" json:"location,omitempty"`
+	Specs    *v1.Specs    `protobuf:"bytes,9,opt,name=specs,proto3" json:"specs,omitempty"`
 	// The canonical amenity vocabulary. Slugs, not an enum: an enum serialises
 	// as numeric ids, which would make the stored documents unreadable and turn
 	// every new amenity into a breaking wire change.
@@ -264,7 +267,8 @@ type UpsertListingRequest struct {
 	Photos        []*v1.Photo       `protobuf:"bytes,11,rep,name=photos,proto3" json:"photos,omitempty"`
 	CountryFields map[string]string `protobuf:"bytes,12,rep,name=country_fields,json=countryFields,proto3" json:"country_fields,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	Agent         *AgentContact     `protobuf:"bytes,13,opt,name=agent,proto3" json:"agent,omitempty"`
-	// active|paused — removal goes through RemoveListing.
+	// Unset means active. REMOVED is refused: removal goes through
+	// RemoveListing.
 	Status        v1.ListingStatus `protobuf:"varint,14,opt,name=status,proto3,enum=pikasa.listings.v1.ListingStatus" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -622,12 +626,13 @@ var File_pikasa_integrators_v1_integrators_proto protoreflect.FileDescriptor
 
 const file_pikasa_integrators_v1_integrators_proto_rawDesc = "" +
 	"\n" +
-	"'pikasa/integrators/v1/integrators.proto\x12\x15pikasa.integrators.v1\x1a\x1bbuf/validate/validate.proto\x1a!pikasa/listings/v1/listings.proto\"\x99\x02\n" +
+	"'pikasa/integrators/v1/integrators.proto\x12\x15pikasa.integrators.v1\x1a\x1bbuf/validate/validate.proto\x1a!pikasa/listings/v1/listings.proto\"\xa5\x02\n" +
 	"\x19UpsertOrganizationRequest\x12(\n" +
 	"\vexternal_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
 	"externalId\x12\x1b\n" +
-	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x128\n" +
-	"\x04type\x18\x03 \x01(\x0e2$.pikasa.listings.v1.OrganizationTypeR\x04type\x12\x19\n" +
+	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12D\n" +
+	"\x04type\x18\x03 \x01(\x0e2$.pikasa.listings.v1.OrganizationTypeB\n" +
+	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\x04type\x12\x19\n" +
 	"\blogo_url\x18\x04 \x01(\tR\alogoUrl\x12\x14\n" +
 	"\x05phone\x18\x05 \x01(\tR\x05phone\x12\x1a\n" +
 	"\bwhatsapp\x18\x06 \x01(\tR\bwhatsapp\x12\x14\n" +
@@ -639,28 +644,31 @@ const file_pikasa_integrators_v1_integrators_proto_rawDesc = "" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
 	"\x05phone\x18\x02 \x01(\tR\x05phone\x12\x1a\n" +
 	"\bwhatsapp\x18\x03 \x01(\tR\bwhatsapp\x12\x14\n" +
-	"\x05email\x18\x04 \x01(\tR\x05email\"\xe4\f\n" +
+	"\x05email\x18\x04 \x01(\tR\x05email\"\xa6\x0e\n" +
 	"\x14UpsertListingRequest\x12(\n" +
 	"\vexternal_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
 	"externalId\x12A\n" +
 	"\x18organization_external_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x16organizationExternalId\x12\x1d\n" +
 	"\x05title\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x05title\x12 \n" +
-	"\vdescription\x18\x04 \x01(\tR\vdescription\x12E\n" +
-	"\rproperty_type\x18\x05 \x01(\x0e2 .pikasa.listings.v1.PropertyTypeR\fpropertyType\x12N\n" +
-	"\x10transaction_type\x18\x06 \x01(\x0e2#.pikasa.listings.v1.TransactionTypeR\x0ftransactionType\x12/\n" +
-	"\x05price\x18\a \x01(\v2\x19.pikasa.listings.v1.PriceR\x05price\x128\n" +
-	"\blocation\x18\b \x01(\v2\x1c.pikasa.listings.v1.LocationR\blocation\x12/\n" +
-	"\x05specs\x18\t \x01(\v2\x19.pikasa.listings.v1.SpecsR\x05specs\x12\x98\x06\n" +
+	"\vdescription\x18\x04 \x01(\tR\vdescription\x12Q\n" +
+	"\rproperty_type\x18\x05 \x01(\x0e2 .pikasa.listings.v1.PropertyTypeB\n" +
+	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\fpropertyType\x12Z\n" +
+	"\x10transaction_type\x18\x06 \x01(\x0e2#.pikasa.listings.v1.TransactionTypeB\n" +
+	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\x0ftransactionType\x12/\n" +
+	"\x05price\x18\a \x01(\v2\x19.pikasa.listings.v1.PriceR\x05price\x12\xc2\x01\n" +
+	"\blocation\x18\b \x01(\v2\x1c.pikasa.listings.v1.LocationB\x87\x01\xbaH\x83\x01\xba\x01}\n" +
+	"\x15location.country_code\x128location.country_code must be an ISO 3166-1 alpha-2 code\x1a*this.country_code.matches('^[A-Za-z]{2}$')\xc8\x01\x01R\blocation\x12/\n" +
+	"\x05specs\x18\t \x01(\v2\x19.pikasa.listings.v1.SpecsR\x05specs\x12\xa9\x06\n" +
 	"\tamenities\x18\n" +
-	" \x03(\tB\xf9\x05\xbaH\xf5\x05\x92\x01\xf1\x05\"\xee\x05r\xeb\x05R\x02acR\x0eaccess_controlR\n" +
+	" \x03(\tB\x8a\x06\xbaH\x86\x06\x92\x01\x82\x06\"\xff\x05r\xfc\x05R\x02acR\x0eaccess_controlR\n" +
 	"accessibleR\x05alarmR\fbackup_powerR\abalconyR\x03bbqR\x04cctvR\tclubhouseR\tconciergeR\x0fcovered_parkingR\tcoworkingR\rdressing_roomR\x06duplexR\belevatorR\x10emergency_stairsR\x10equipped_kitchenR\vfamily_roomR\n" +
-	"fire_alarmR\tfireplaceR\x0efitted_kitchenR\tfurnishedR\x06gardenR\vgreen_areasR\x03gymR\thalf_bathR\x15independent_utilitiesR\bintercomR\ajacuzziR\alaundryR\x04loftR\x12motorcycle_parkingR\vnatural_gasR\rnatural_lightR\fnear_transitR\fopen_parkingR\x06pantryR\aparkingR\x10parking_assignedR\x0eparking_sharedR\x0fparking_visitorR\x05patioR\tpenthouseR\fpet_friendlyR\n" +
+	"fire_alarmR\tfireplaceR\x0efitted_kitchenR\tfurnishedR\x06gardenR\x0fgated_communityR\vgreen_areasR\x03gymR\thalf_bathR\x15independent_utilitiesR\bintercomR\ajacuzziR\alaundryR\x04loftR\x12motorcycle_parkingR\vnatural_gasR\rnatural_lightR\fnear_transitR\fopen_parkingR\x06pantryR\aparkingR\x10parking_assignedR\x0eparking_sharedR\x0fparking_visitorR\x05patioR\tpenthouseR\fpet_friendlyR\n" +
 	"playgroundR\x04poolR\x0eprivate_garageR\tremodeledR\x05saunaR\bsecurityR\rsecurity_doorR\fservice_roomR\x0esmart_buildingR\fsolar_panelsR\fsports_courtR\astorageR\x06studioR\aterraceR\vtrash_chuteR\x04viewR\x0ewalk_in_closetR\fwater_heaterR\n" +
 	"water_tankR\tamenities\x121\n" +
 	"\x06photos\x18\v \x03(\v2\x19.pikasa.listings.v1.PhotoR\x06photos\x12e\n" +
 	"\x0ecountry_fields\x18\f \x03(\v2>.pikasa.integrators.v1.UpsertListingRequest.CountryFieldsEntryR\rcountryFields\x129\n" +
-	"\x05agent\x18\r \x01(\v2#.pikasa.integrators.v1.AgentContactR\x05agent\x129\n" +
-	"\x06status\x18\x0e \x01(\x0e2!.pikasa.listings.v1.ListingStatusR\x06status\x1a@\n" +
+	"\x05agent\x18\r \x01(\v2#.pikasa.integrators.v1.AgentContactR\x05agent\x12G\n" +
+	"\x06status\x18\x0e \x01(\x0e2!.pikasa.listings.v1.ListingStatusB\f\xbaH\t\x82\x01\x06\x18\x00\x18\x01\x18\x02R\x06status\x1a@\n" +
 	"\x12CountryFieldsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"4\n" +
@@ -669,9 +677,10 @@ const file_pikasa_integrators_v1_integrators_proto_rawDesc = "" +
 	"\x14RemoveListingRequest\x12(\n" +
 	"\vexternal_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
 	"externalId\"\x17\n" +
-	"\x15RemoveListingResponse\"/\n" +
-	"\x11SetWebhookRequest\x12\x1a\n" +
-	"\x03url\x18\x01 \x01(\tB\b\xbaH\x05r\x03\x18\xf4\x03R\x03url\",\n" +
+	"\x15RemoveListingResponse\"\xc2\x01\n" +
+	"\x11SetWebhookRequest\x12\xac\x01\n" +
+	"\x03url\x18\x01 \x01(\tB\x99\x01\xbaH\x95\x01\xba\x01\x8c\x01\n" +
+	"\burl.http\x12#url must be an absolute http(s) URL\x1a[this == '' || (this.isUri() && (this.startsWith('http://') || this.startsWith('https://')))r\x03\x18\xf4\x03R\x03url\",\n" +
 	"\x12SetWebhookResponse\x12\x16\n" +
 	"\x06secret\x18\x01 \x01(\tR\x06secret2\xc9\x03\n" +
 	"\x11IntegratorService\x12y\n" +
