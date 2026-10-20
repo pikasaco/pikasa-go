@@ -578,7 +578,8 @@ type SetWebhookResponse struct {
 	// X-Pikasa-Timestamp (unix seconds) and X-Pikasa-Signature =
 	// hex(HMAC-SHA256(timestamp + "." + raw_body, secret)). Receivers should
 	// reject stale timestamps (e.g. > 5 minutes) to prevent replay, and must
-	// dedup on the payload's leadId (delivery is at-least-once).
+	// dedup on the event's event_id (delivery is at-least-once). Every request
+	// is one pikasa.webhooks.v1.Event; see that file.
 	// Empty when the request cleared the webhook.
 	Secret        string `protobuf:"bytes,1,opt,name=secret,proto3" json:"secret,omitempty"`
 	unknownFields protoimpl.UnknownFields

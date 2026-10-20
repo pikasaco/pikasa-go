@@ -16,6 +16,7 @@ go get github.com/pikasaco/pikasa-go
 | `pikasa/leads/v1` | Public lead capture. |
 | `pikasa/discovery/v1` | Property discovery across the wider market — API-key authenticated. |
 | `pikasa/errors/v1` | The error catalogue: one `ErrorReason` on every error the two API-key services return. |
+| `pikasa/webhooks/v1` | The events pikasa POSTs to your webhook: leads and listing status changes. |
 
 The consumer-account API is deliberately absent: it serves pikasa's own
 portal and is not built to support third-party use.
@@ -155,6 +156,54 @@ error with **no** `ErrorDetail` never reached pikasa's code. With
 and with `internal`/`unknown` it is a server crash: retry those as
 `INTERNAL`. Any other code means the transport refused the request — a body
 that does not decode, or the wrong URL or content type — so fix the client.
+
+## Receiving webhooks
+
+Register an endpoint with `SetWebhook`; keep the `whsec_…` secret it returns.
+Every POST is one `webhooksv1.Event` in proto3 JSON. Verify the signature
+over the raw body before parsing, deduplicate on `EventId`, answer 2xx once
+the event is stored, and ignore what you do not recognise:
+
+```go
+func (h *hook) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(http.MaxBytesReader(w, r.Body, 1<<20))
+	if err != nil {
+		http.Error(w, "too large", http.StatusRequestEntityTooLarge)
+		return
+	}
+	ts := r.Header.Get("X-Pikasa-Timestamp")
+	sec, err := strconv.ParseInt(ts, 10, 64)
+	if err != nil || time.Since(time.Unix(sec, 0)).Abs() > 5*time.Minute {
+		http.Error(w, "stale", http.StatusUnauthorized)
+		return
+	}
+	mac := hmac.New(sha256.New, h.secret)
+	mac.Write([]byte(ts + "."))
+	mac.Write(body)
+	want := hex.EncodeToString(mac.Sum(nil))
+	if !hmac.Equal([]byte(want), []byte(r.Header.Get("X-Pikasa-Signature"))) {
+		http.Error(w, "bad signature", http.StatusUnauthorized)
+		return
+	}
+
+	var ev webhooksv1.Event
+	if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(body, &ev); err != nil {
+		http.Error(w, "bad event", http.StatusBadRequest)
+		return
+	}
+	switch d := ev.Data.(type) {
+	case *webhooksv1.Event_Lead:
+		h.saveLead(ev.EventId, d.Lead) // LeadId names the contact, EventId this message
+	case *webhooksv1.Event_ListingStatus:
+		h.saveStatus(ev.EventId, d.ListingStatus) // ExternalId is your listing id
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+```
+
+A lead re-fires with the same `LeadId` each time the person writes again,
+so deduplicating on `LeadId` loses follow-ups. Status events can arrive out
+of order after a retry; keep the one with the latest `CreatedAt`.
 
 ## Versioning
 
